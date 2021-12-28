@@ -31,6 +31,7 @@ pub fn length_of_longest_substring(s: String) -> i32 {
 
 fn main() {}
 
+#[cfg(test)]
 mod tests {
     use super::*;
     fn run_test(string: String, length: i32) {

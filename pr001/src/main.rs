@@ -54,6 +54,7 @@ pub fn two_sum_linear(nums: Vec<i32>, target: i32) -> Vec<i32> {
     panic!("Invalid Two Sum Instance")
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     fn run_test_quadratic(nums: Vec<i32>, target: i32, output: Vec<i32>) {

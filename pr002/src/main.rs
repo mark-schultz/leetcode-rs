@@ -98,6 +98,7 @@ pub fn add_two_numbers(
 
 fn main() {}
 
+#[cfg(test)]
 mod tests {
     use super::*;
 
