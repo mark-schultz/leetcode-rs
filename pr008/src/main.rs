@@ -4,16 +4,19 @@ pub fn my_atoi(s: String) -> i32 {
     let mut chars = s.trim_start().chars();
     let mut sign = 1;
     let mut output: i32 = 0;
-    match chars.next().unwrap() {
-        '+' => {}
-        '-' => sign = -1,
-        i @ _ => {
-            if let Some(x) = i.to_digit(10) {
-                output += x as i32;
-            } else {
-                return 0;
+    match chars.next() {
+        Some(d) => match d {
+            '+' => {}
+            '-' => sign = -1,
+            i @ _ => {
+                if let Some(x) = i.to_digit(10) {
+                    output += x as i32;
+                } else {
+                    return 0;
+                }
             }
-        }
+        },
+        None => return 0,
     }
     for chr in chars {
         if let Some(x) = chr.to_digit(10) {
