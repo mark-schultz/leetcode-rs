@@ -7,7 +7,13 @@ pub fn my_atoi(s: String) -> i32 {
     match chars.next().unwrap() {
         '+' => {}
         '-' => sign = -1,
-        i @ _ => output += i.to_digit(10).unwrap() as i32,
+        i @ _ => {
+            if let Some(x) = i.to_digit(10) {
+                output += x as i32;
+            } else {
+                return 0;
+            }
+        }
     }
     for chr in chars {
         if let Some(x) = chr.to_digit(10) {
