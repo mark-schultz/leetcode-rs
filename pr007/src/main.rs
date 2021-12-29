@@ -1,13 +1,21 @@
-pub fn reverse(x: i32) -> i32 {
-    let mut output = 0;
+fn reverse_helper(x: i32) -> Option<i32> {
+    let mut output: i32 = 0;
     let sign = x.signum();
-    let mut x = x.abs();
+    let mut x = x.checked_abs()?;
     while x > 0 {
-        output *= 10;
-        output += x % 10;
-        x /= 10;
+        output = output.checked_mul(10)?;
+        output = output.checked_add(x % 10)?;
+        x = x.checked_div(10)?;
     }
-    output * sign
+    output.checked_mul(sign)
+}
+
+pub fn reverse(x: i32) -> i32 {
+    if let Some(y) = reverse_helper(x) {
+        y
+    } else {
+        0
+    }
 }
 
 fn main() {}
@@ -29,6 +37,10 @@ mod tests {
     }
     #[test]
     fn test_4() {
-        assert_eq!(5, reverse(5))
+        assert_eq!(5, reverse(5));
+    }
+    #[test]
+    fn test_5() {
+        assert_eq!(0, reverse(1534236469));
     }
 }
