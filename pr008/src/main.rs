@@ -18,12 +18,12 @@ pub fn my_atoi(s: String) -> i32 {
     for chr in chars {
         if let Some(x) = chr.to_digit(10) {
             output = output.saturating_mul(10);
-            output = output.saturating_add(x as i32);
+            output = output.saturating_add(sign * x as i32);
         } else {
             break;
         }
     }
-    output.saturating_mul(sign)
+    output
 }
 
 fn main() {}
@@ -42,5 +42,9 @@ mod tests {
     #[test]
     fn test_ex_3() {
         assert_eq!(4193, my_atoi(String::from("4193 with words")));
+    }
+    #[test]
+    fn test_4() {
+        assert_eq!(-2147483648, my_atoi(String::from("-91283472332")));
     }
 }
