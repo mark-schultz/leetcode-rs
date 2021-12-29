@@ -1,75 +1,104 @@
+use std::cmp::Ordering;
 use std::str;
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+enum CenterType {
+    Single,
+    Double,
+}
+
+#[derive(Copy, Clone, Debug)]
+struct SubStr<'a> {
+    c: usize,
+    j: usize,
+    s: &'a str,
+    center: CenterType,
+}
+
+impl<'a> SubStr<'a> {
+    fn try_new(s: &'a str, c: usize, j: usize, center: CenterType) -> Option<SubStr<'a>> {
+        let b = match center {
+            CenterType::Single => 0,
+            CenterType::Double => 1,
+        };
+        if c >= j && c + j + b < s.len() {
+            Some(SubStr { c, j, s, center })
+        } else {
+            None
+        }
+    }
+    fn len(self) -> usize {
+        2 * self.j + {
+            match self.center {
+                CenterType::Single => 1,
+                CenterType::Double => 2,
+            }
+        }
+    }
+}
+
+impl<'a> PartialEq for SubStr<'a> {
+    fn eq(&self, other: &Self) -> bool {
+        self.center == other.center && self.j == other.j && self.s == other.s
+    }
+}
+
+impl<'a> PartialOrd for SubStr<'a> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        if self.s != other.s {
+            None
+        } else {
+            self.len().partial_cmp(&other.len())
+        }
+    }
+}
+
+impl<'a> ToString for SubStr<'a> {
+    fn to_string(&self) -> String {
+        let b = match self.center {
+            CenterType::Single => 0,
+            CenterType::Double => 1,
+        };
+        let left_idx = self.c - self.j;
+        let right_idx = self.c + self.j + b;
+        str::from_utf8(&self.s.as_bytes()[left_idx..=right_idx])
+            .unwrap()
+            .to_string()
+    }
+}
 
 fn main() {}
 
 pub fn longest_palindrome(s: String) -> String {
-    let s = s.as_bytes();
     // Centered at single char
-    let mut max_j_single = None;
-    let mut max_c_single = None;
+    let mut max_substr = None;
+    let s_bytes = s.as_bytes();
     for c in 0..s.len() {
         let mut j = 0;
-        while c >= j && c + j < s.len() {
-            if s[c - j] == s[c + j] {
-                if let Some(max_j) = max_j_single {
-                    if j >= max_j {
-                        max_j_single = Some(j);
-                        max_c_single = Some(c);
-                    }
-                } else {
-                    max_j_single = Some(j);
-                    max_c_single = Some(c);
-                }
-            } else {
+        loop {
+            let new_substr = SubStr::try_new(&s, c, j, CenterType::Single);
+            if new_substr == None || s_bytes[c - j] != s_bytes[c + j] {
                 break;
+            } else if new_substr > max_substr {
+                max_substr = new_substr;
             }
             j += 1;
         }
     }
     // Centered at two char
-    let mut max_j_double = None;
-    let mut max_c_double = None;
-    for c in 0..(s.len() - 1) {
+    for c in 0..s.len() {
         let mut j = 0;
-        while c >= j && c + j + 1 < s.len() {
-            if s[c - j] == s[c + j + 1] {
-                if let Some(max_j) = max_j_single {
-                    if j >= max_j {
-                        max_j_double = Some(j);
-                        max_c_double = Some(c);
-                    }
-                } else {
-                    max_j_double = Some(j);
-                    max_c_double = Some(c);
-                }
-            } else {
+        loop {
+            let new_substr = SubStr::try_new(&s, c, j, CenterType::Double);
+            if new_substr == None || s_bytes[c - j] != s_bytes[c + j + 1] {
                 break;
+            } else if new_substr > max_substr {
+                max_substr = new_substr;
             }
             j += 1;
         }
     }
-    match (max_j_single, max_j_double) {
-        (Some(i), Some(j)) => {
-            if 1 + 2 * i > 2 + 2 * j {
-                let c = max_c_single.unwrap();
-                let j = i;
-                str::from_utf8(&s[c - j..=c + j]).unwrap().to_string()
-            } else {
-                let c = max_c_double.unwrap();
-                str::from_utf8(&s[c - j..=c + j + 1]).unwrap().to_string()
-            }
-        }
-        (Some(i), None) => {
-            let c = max_c_single.unwrap();
-            let j = i;
-            str::from_utf8(&s[c - j..=c + j]).unwrap().to_string()
-        }
-        (None, Some(j)) => {
-            let c = max_c_double.unwrap();
-            str::from_utf8(&s[c - j..=c + j + 1]).unwrap().to_string()
-        }
-        (None, None) => unreachable!(),
-    }
+    max_substr.unwrap().to_string()
 }
 
 #[cfg(test)]
@@ -78,7 +107,7 @@ mod tests {
     #[test]
     fn test_ex_1() {
         let s = String::from("babad");
-        let output = String::from("aba");
+        let output = String::from("bab");
         assert_eq!(output, longest_palindrome(s));
     }
     #[test]
@@ -108,7 +137,13 @@ mod tests {
     #[test]
     fn test_6() {
         let s = String::from("ac");
-        let output = String::from("c");
+        let output = String::from("a");
+        assert_eq!(output, longest_palindrome(s));
+    }
+    #[test]
+    fn test_7() {
+        let s = String::from("tattarrattat");
+        let output = String::from("tattarrattat");
         assert_eq!(output, longest_palindrome(s));
     }
 }
